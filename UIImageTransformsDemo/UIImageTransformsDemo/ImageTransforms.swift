@@ -9,24 +9,30 @@
 import UIKit
 
 
-extension UIImage
-{
+extension UIImage {
+    fileprivate func createBitmapContext(width: Int, height: Int) -> CGContext {
+        let image = self.cgImage!
+        let bitsPerComponent = image.bitsPerComponent
+        let colorSpace = image.colorSpace
+        let bitmapInfo = image.bitmapInfo.rawValue
+        let ctx = CGContext(data: nil, width: width, height: height,
+            bitsPerComponent: bitsPerComponent, bytesPerRow: 0,
+            space: colorSpace!, bitmapInfo: bitmapInfo)
+        return ctx!
+    }
+}
+
+
+extension UIImage {
     // Resizing without keeping aspect ratio of the original image
     func resize(size newSize: CGSize) -> UIImage {
         let ctx = createBitmapContext(width: Int(newSize.width), height: Int(newSize.height))
-        CGContextDrawImage(ctx, CGRect(origin: CGPointZero, size: newSize), self.CGImage!)
-        let resizedImage = UIImage(CGImage: CGBitmapContextCreateImage(ctx)!)
+        
+        let dstRect = CGRect(origin: CGPoint.zero, size: newSize)
+        ctx.draw(self.cgImage!, in: dstRect)
+        
+        let resizedImage = UIImage(cgImage: ctx.makeImage()!)
         return resizedImage
-    }
-    
-    
-    private func createBitmapContext(width width: Int, height: Int) -> CGContext {
-        let image = self.CGImage!
-        let bitsPerComponent = CGImageGetBitsPerComponent(image)
-        let colorSpace = CGImageGetColorSpace(image)
-        let bitmapInfo = CGImageGetBitmapInfo(image).rawValue
-        let ctx = CGBitmapContextCreate(nil, width, height, bitsPerComponent, 0, colorSpace, bitmapInfo)
-        return ctx!
     }
     
     
@@ -36,14 +42,16 @@ extension UIImage
         let originalAspectRatio = size.width/size.height
         let newAspectRatio = newSize.width/newSize.height
         
-        let scaleFactor = originalAspectRatio < newAspectRatio ? newSize.width/size.width : newSize.height/size.height
-        CGContextTranslateCTM(ctx, newSize.width/2, newSize.height/2)
-        CGContextScaleCTM(ctx, scaleFactor, scaleFactor)
+        let scaleFactor = originalAspectRatio < newAspectRatio
+            ? newSize.width/size.width : newSize.height/size.height
+        
+        ctx.translateBy(x: newSize.width/2, y: newSize.height/2)
+        ctx.scaleBy(x: scaleFactor, y: scaleFactor)
         
         let dstRect = CGRect(x: -size.width/2, y: -size.height/2, width: size.width, height: size.height)
-        CGContextDrawImage(ctx, dstRect, self.CGImage!)
+        ctx.draw(self.cgImage!, in: dstRect)
         
-        let resizedImage = UIImage(CGImage: CGBitmapContextCreateImage(ctx)!)
+        let resizedImage = UIImage(cgImage: ctx.makeImage()!)
         return resizedImage
     }
     
@@ -57,14 +65,14 @@ extension UIImage
         let ctx = createBitmapContext(width: Int(newWidth), height: Int(newHeight))
         
         // Setup transformation matrix
-        CGContextTranslateCTM(ctx, newWidth/2, newHeight/2)
-        CGContextRotateCTM(ctx, -angle)
-        
+        ctx.translateBy(x: newWidth/2, y: newHeight/2)
+        ctx.rotate(by: -angle)
+
         // Draw original image in the center of the new bitmap
         let dstRect = CGRect(x: -size.width/2, y: -size.height/2, width: size.width, height: size.height)
-        CGContextDrawImage(ctx, dstRect, self.CGImage!)
+        ctx.draw(self.cgImage!, in: dstRect)
         
-        let rotatedImage = UIImage(CGImage: CGBitmapContextCreateImage(ctx)!)
+        let rotatedImage = UIImage(cgImage: ctx.makeImage()!)
         return rotatedImage
     }
 }

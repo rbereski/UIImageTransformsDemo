@@ -9,32 +9,25 @@
 import UIKit
 
 
-class ResizingViewController: UIViewController
-{
+class ResizingViewController: UIViewController {
     @IBOutlet weak var originalImageView: UIImageView!
     @IBOutlet weak var resizedImageView1: UIImageView!
     @IBOutlet weak var resizedImageView2: UIImageView!
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-    }
     
-    @IBAction func didTapSelectImage(sender: UIButton) {
+    @IBAction func didTapSelectImage(_ sender: UIButton) {
         let imagePicker = UIImagePickerController()
-        
-        imagePicker.sourceType = .PhotoLibrary
+        imagePicker.sourceType = .photoLibrary
         imagePicker.delegate = self
-        self.presentViewController(imagePicker, animated: true, completion: nil)
+        self.present(imagePicker, animated: true, completion: nil)
     }
 }
 
 
-extension ResizingViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate
-{
-    func imagePickerController(picker: UIImagePickerController,
-        didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        self.dismissViewControllerAnimated(true) {
+extension ResizingViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        self.dismiss(animated: true) {
+            guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else { return }
             self.originalImageView.image = image
             let size1 = self.resizedImageView1.bounds.size * 2
             let size2 = self.resizedImageView2.bounds.size * 2

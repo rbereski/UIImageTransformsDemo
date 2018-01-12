@@ -8,51 +8,41 @@
 
 import UIKit
 
-class RotationViewController: UIViewController
-{
+class RotationViewController: UIViewController {
     @IBOutlet weak var imageView: UIImageView!
     var originalImage: UIImage?
     var rotationAngle: CGFloat = 0
     let rotationStep: CGFloat = 10
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
-    
-    
-    @IBAction func didTapSelectImage(sender: AnyObject) {
+
+    @IBAction func didTapSelectImage(_ sender: AnyObject) {
         let imagePicker = UIImagePickerController()
-        imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+        imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         imagePicker.delegate = self
-        self.presentViewController(imagePicker, animated: true, completion: nil)
+        self.present(imagePicker, animated: true, completion: nil)
     }
     
-    
-    @IBAction func didTapRotateLeft(sender: AnyObject) {
-        rotationAngle = (360 + rotationAngle - rotationStep) % 360
-        self.imageView.image = originalImage?.rotate(degreesToRadians(rotationAngle))
+    @IBAction func didTapRotateLeft(_ sender: AnyObject) {
+        rotationAngle = (360 + rotationAngle - rotationStep).truncatingRemainder(dividingBy: 360)
+        self.imageView.image = originalImage?.rotate(angle: degreesToRadians(degrees: rotationAngle))
         print("rotate: \(rotationAngle)")
     }
     
-    
-    @IBAction func didTapRotateRight(sender: AnyObject) {
-        rotationAngle = (rotationAngle + rotationStep) % 360
-        self.imageView.image = originalImage?.rotate(degreesToRadians(rotationAngle))
+    @IBAction func didTapRotateRight(_ sender: AnyObject) {
+        rotationAngle = (rotationAngle + rotationStep).truncatingRemainder(dividingBy: 360)
+        self.imageView.image = originalImage?.rotate(angle: degreesToRadians(degrees: rotationAngle))
         print("rotate: \(rotationAngle)")
     }
-    
     
     func degreesToRadians(degrees: CGFloat) -> CGFloat {
-        return degrees / CGFloat(180.0) * CGFloat(M_PI)
+        return degrees / CGFloat(180.0) * CGFloat.pi
     }
 }
 
 
-extension RotationViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate
-{
-    func imagePickerController(picker: UIImagePickerController,
-        didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-        self.dismissViewControllerAnimated(true) {
+extension RotationViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        self.dismiss(animated: true) {
+            guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else { return }
             self.originalImage = image
             self.imageView.image = image
             self.rotationAngle = 0
